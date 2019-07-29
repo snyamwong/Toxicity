@@ -2,9 +2,13 @@ import json
 
 
 output = []
-files = ["RC_2016-01", "RC_2016-02", "RC_2016-03", "RC_2016-04",
-         "RC_2016-05", "RC_2016-06", "RC_2016-07", "RC_2016-08",
-         "RC_2016-09", "RC_2016-10", "RC_2016-11", "RC_2016-12"]
+#files = ["RC_2016-01", "RC_2016-02", "RC_2016-03", "RC_2016-04",
+#         "RC_2016-05", "RC_2016-06", "RC_2016-07", "RC_2016-08",
+#         "RC_2016-09", "RC_2016-10", "RC_2016-11", "RC_2016-12"]
+
+files = ["RC_2016-09", "RC_2016-10", "RC_2016-11", "RC_2016-12"]
+# for rerunning b/c "ups" field was depreciated for the "score" field
+
 target_subreddits = ["the_donald", "hillaryclinton", "sandersforpresident", "politics", "rarepuppers"]
 
 TD = 0
@@ -40,8 +44,27 @@ for file in files:
                             print("Unexpected subreddit, Subreddit = {}".format(outputDict["subreddit"]))
                             print(outputDict)
                     except:
-                        print("One broke")
-                        pass
+                        try:
+                            outputDict.update([("subreddit", x["subreddit"].lower()), ("author", x["author"].lower()),
+                                               ("body", x["body"].lower()), ("gilded", x["gilded"]),
+                                               ("controversiality", x["controversiality"]), ("ups", x["score"])])
+                            output.append(outputDict)
+                            if outputDict["subreddit"] == "the_donald":
+                                TD += 1
+                            elif outputDict["subreddit"] == "hillaryclinton":
+                                HC += 1
+                            elif outputDict["subreddit"] == "sandersforpresident":
+                                BS += 1
+                            elif outputDict["subreddit"] == "politics":
+                                POLITIC += 1
+                            elif outputDict["subreddit"] == "rarepuppers":
+                                PUPPERS += 1
+                            else:
+                                print("Unexpected subreddit, Subreddit = {}".format(outputDict["subreddit"]))
+                                print(outputDict)
+                        except:
+                            print("Something else is f*cked...")
+                            pass
 
     out_file = "../Clean-Reddit-Comments/clean{}".format(file)
     with open(out_file, 'a') as f:
