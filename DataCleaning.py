@@ -72,7 +72,7 @@ for file in files:
             f.write(json.dumps(data))
             f.write("\n")
 
-    with open("../Clean-Reddit-Comments/{}stats".format(file), "w") as f:
+    with open("../Clean-Reddit-Comments/{}stats.txt".format(file), "w") as f:
         f.write("The_Donald Comments: {}\n".format(TD))
         f.write("HillaryClinton Comments: {}\n".format(HC))
         f.write("SandersForPresident Comments: {}\n".format(BS))
