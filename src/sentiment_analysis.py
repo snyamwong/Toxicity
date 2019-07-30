@@ -3,7 +3,19 @@ Provides static helper functions for analyzing the sentiment of Reddit comments.
 """
 
 
+from pyspark import SparkContext
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import udf
+from pyspark.sql.types import DoubleType
 from textblob import TextBlob
+
+
+def create_spark():
+    """
+    Create a Spark object
+    """
+
+    return SparkSession(sparkContext=SparkContext.getOrCreate())
 
 
 def get_comment_polarity(comment):
@@ -12,7 +24,7 @@ def get_comment_polarity(comment):
     """
     comment = TextBlob(comment)
 
-    return (comment, comment.sentiment.polarity)
+    return comment.sentiment.polarity
 
 
 def get_comment_subjectivity(comment):
@@ -21,16 +33,26 @@ def get_comment_subjectivity(comment):
     """
     comment = TextBlob(comment)
 
-    return (comment, comment.sentiment.subjectivity)
+    return comment.sentiment.subjectivity
+
+
+def main():
+    """
+    Main method (for testing)
+    """
+
+    spark = create_spark()
+
+    data = spark.read.json('../dump/RC_2005-12-clean.json')
+
+    polarity_udf = udf(get_comment_polarity, DoubleType())
+    subjectivity_udf = udf(get_comment_subjectivity, DoubleType())
+
+    data = data.withColumn('polarity', polarity_udf(data.body)) \
+               .withColumn('subjectivity', subjectivity_udf(data.body))
+
+    data.show()
 
 
 if __name__ == '__main__':
-    sentiment = get_comment_polarity(
-        'Textblob is amazingly simple to use. What great fun!')
-
-    polarity = get_comment_subjectivity(
-        'Textblob is amazingly simple to use. What great fun!')
-
-    print(sentiment)
-
-    print(polarity)
+    main()
