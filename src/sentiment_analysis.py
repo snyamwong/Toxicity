@@ -78,15 +78,15 @@ def main():
 
     average_polarity = data.groupby('subreddit').agg(mean('polarity'))
 
+    average_subjectivity = data.groupby('subreddit').agg(mean('subjectivity'))
+
     get_plot(average_polarity)
 
-    #toxic_comments = data.orderBy('polarity')
+    get_plot(average_subjectivity)
 
-    #fake_comments = data.orderBy('subjectivity')
+    data.orderBy('polarity').show()
 
-    # pprint(toxic_comments.take(5))
-
-    # pprint(fake_comments.take(5))
+    data.orderBy('subjectivity').show()
 
 
 if __name__ == '__main__':
