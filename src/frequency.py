@@ -17,8 +17,12 @@ def getFrequency(data):
     #get frequency of words
     freq = body_rdd_remove_stop.map(lambda x: (x, 1)).reduceByKey(lambda x, y: x + y)
 
-    #convert to dictionary
-    return freq.collectAsMap()
+    sorted_freq = freq.sortBy(lambda x: -x[1]).take(200)
+
+    with open('frequency.txt', 'w') as f:
+        for item in sorted_freq:
+            print >> f, item
+
 
 def main():
 
@@ -35,10 +39,8 @@ def main():
     data = spark.read.json(clean_file)
 
     #get dictionary
-    dict = getFrequency(data)
+    getFrequency(data)
 
-    #test
-    print(dict['look'])
 
 if __name__ == '__main__':
     main()
