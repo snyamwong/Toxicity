@@ -4,7 +4,7 @@ Provides static helper functions for analyzing the sentiment of Reddit comments.
 
 import matplotlib.pyplot as plt
 
-from pyspark import SparkContext
+from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import udf, mean
 from pyspark.sql.types import DoubleType
@@ -16,7 +16,11 @@ def create_spark():
     Create a Spark object
     """
 
-    return SparkSession(sparkContext=SparkContext.getOrCreate())
+    conf = SparkConf().setMaster("local[*]")
+    #conf.set("spark.executor.heartbeatInterval", "3600s")
+    spark_context = SparkContext(conf=conf)
+    spark_context.setLogLevel("ERROR")
+    return SparkSession(sparkContext=spark_context)
 
 
 def get_comment_polarity(comment):
@@ -44,8 +48,6 @@ def get_plot(dataframe):
     TODO: labels, legend and title all need to be manually changed. This is more for demo purposes.
     """
 
-    plt.figure()
-
     df_pandas = dataframe.toPandas()
 
     df_plot = df_pandas.plot(
@@ -68,7 +70,7 @@ def main():
 
     spark = create_spark()
 
-    data = spark.read.json('../dump/RC_2005-12-clean.json')
+    data = spark.read.json('../dump/cleanRC_2016-11')
 
     polarity_udf = udf(get_comment_polarity, DoubleType())
     subjectivity_udf = udf(get_comment_subjectivity, DoubleType())
@@ -80,13 +82,17 @@ def main():
 
     average_subjectivity = data.groupby('subreddit').agg(mean('subjectivity'))
 
-    get_plot(average_polarity)
+    average_polarity.toPandas().to_csv('../dump/RC_2016-11-polarity.csv')
 
-    get_plot(average_subjectivity)
+    average_subjectivity.toPandas().to_csv('../dump/RC_2016-11-subjectivity.csv')
 
-    data.orderBy('polarity').show()
+    # get_plot(average_polarity)
 
-    data.orderBy('subjectivity').show()
+    # get_plot(average_subjectivity)
+
+    # data.orderBy('polarity').show()
+
+    # data.orderBy('subjectivity').show()
 
 
 if __name__ == '__main__':
