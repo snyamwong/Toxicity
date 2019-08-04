@@ -2,8 +2,6 @@
 Provides static helper functions for analyzing the sentiment of Reddit comments.
 """
 
-import matplotlib.pyplot as plt
-
 from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import udf, mean
@@ -41,28 +39,6 @@ def get_comment_subjectivity(comment):
     return comment.sentiment.subjectivity
 
 
-def get_plot(dataframe):
-    """
-    Plots the dataframe
-
-    TODO: labels, legend and title all need to be manually changed. This is more for demo purposes.
-    """
-
-    df_pandas = dataframe.toPandas()
-
-    df_plot = df_pandas.plot(
-        kind='bar', title='Average Polarity per Subreddit')
-
-    df_plot.set_xlabel('subreddit')
-
-    df_plot.set_ylabel('average polarity')
-
-    # TODO: need to manually change it here, should be dynamic
-    df_plot.legend(['reddit.com'])
-
-    plt.show()
-
-
 def main():
     """
     Main method (for testing)
@@ -85,10 +61,6 @@ def main():
     average_polarity.toPandas().to_csv('../dump/RC_2016-11-polarity.csv')
 
     average_subjectivity.toPandas().to_csv('../dump/RC_2016-11-subjectivity.csv')
-
-    # get_plot(average_polarity)
-
-    # get_plot(average_subjectivity)
 
     # data.orderBy('polarity').show()
 
