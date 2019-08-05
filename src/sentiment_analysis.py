@@ -1,12 +1,19 @@
 """
 Provides static helper functions for analyzing the sentiment of Reddit comments.
+
+if first time using:
+    import nltk
+    nltk.download('vader_lexicon')
 """
 
-from pyspark import SparkContext, SparkConf
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import udf, mean
-from pyspark.sql.types import DoubleType
 from textblob import TextBlob
+from pyspark.sql.types import DoubleType
+from pyspark.sql.functions import udf, mean
+from pyspark.sql import SparkSession
+from pyspark import SparkContext, SparkConf
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+
+analyser = SentimentIntensityAnalyzer()
 
 
 def create_spark():
@@ -23,7 +30,7 @@ def create_spark():
 
 def get_comment_polarity(comment):
     """
-    Given a comment, return a tuple of comment, and its polarity score.
+    Given a comment, return its polarity score.
     """
     comment = TextBlob(comment)
 
@@ -32,16 +39,24 @@ def get_comment_polarity(comment):
 
 def get_comment_subjectivity(comment):
     """
-    Given a comment, return a tuple of comment, and its subjectivity score.
+    Given a comment, return its subjectivity score.
     """
     comment = TextBlob(comment)
 
     return comment.sentiment.subjectivity
 
 
-def main():
+def get_comment_compound(comment):
     """
-    Main method (for testing)
+    Given a comment, return its compound score.
+    """
+
+    return analyser.polarity_scores(comment)['compound']
+
+
+def textblob_sentiment_analysis():
+    """
+    TextBlob Sentiment Analysis
     """
 
     spark = create_spark()
@@ -67,5 +82,25 @@ def main():
     # data.orderBy('subjectivity').show()
 
 
+def vader_sentiment_analysis():
+    """
+    Vader Sentiment Analysis
+    """
+
+    spark = create_spark()
+
+    data = spark.read.json('../dump/cleanRC_2016-11')
+
+    compound_udf = udf(get_comment_compound, DoubleType())
+
+    data = data.withColumn('compound', compound_udf(data.body))
+
+    average_compound = data.groupBy('subreddit').agg(mean('compound'))
+
+    average_compound.toPandas().to_csv('../dump/RC_2016-11-compound.csv')
+
+
 if __name__ == '__main__':
-    main()
+    # textblob_sentiment_analysis()
+
+    # vader_sentiment_analysis()
