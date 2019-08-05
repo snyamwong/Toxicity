@@ -19,4 +19,4 @@ Also remember to update the requirements.txt whenever you install a new package!
 
 Whenever you install a new pip package:
 
-```pip freeze > cat requirements.txt```
+```pip freeze > requirements.txt```
