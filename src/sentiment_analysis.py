@@ -3,7 +3,7 @@ Provides static helper functions for analyzing the sentiment of Reddit comments.
 """
 
 
-from pyspark import SparkContext
+from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import udf
 from pyspark.sql.types import DoubleType
@@ -15,7 +15,11 @@ def create_spark():
     Create a Spark object
     """
 
-    return SparkSession(sparkContext=SparkContext.getOrCreate())
+    conf = SparkConf().setMaster("local[*]")
+    spark_context = SparkContext(conf=conf)
+    spark_context.setLogLevel("ERROR")
+    return SparkSession(sparkContext=spark_context)
+
 
 
 def get_comment_polarity(comment):
